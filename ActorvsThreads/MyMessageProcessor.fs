@@ -1,5 +1,16 @@
-﻿// Weitere Informationen zu F# unter "http://fsharp.net".
-
+﻿/// Implementation of the following protokoll: 
+/// sending messages with: <id> <command> <parameter> RAWDATA <bytecount>\0<rawbytes>
+/// or <id> <command> <parameter>\0
+/// \ has to be escaped to \\ in <parameter>, <command>
+/// " " has to be escaped to "\ " in <parameter>, <command>
+/// \0 has to be escaped in "\0" everywhere but <rawbytes>
+/// <id> is a unique byte array with all bytes > 0x20 (which is the space character)
+///
+/// The Parter can answer a command with 
+/// <id> _ <parameter> RAWDATA <bytecount>\0<rawbytes>
+/// or
+/// <id> _ <parameter>\0
+/// Where <id> is the same as the matching first message
 
 module MyMessageProcessor
 
@@ -10,7 +21,6 @@ open System.Net
 open System.Net.Sockets
 open System.Collections.Generic
 open System.Diagnostics
-
 
 open SocketHelper
 
@@ -30,6 +40,7 @@ let printer =
 // 'kprintf' and then posts the result to the printer agent.
 let myprint fmt = 
   Printf.kprintf printer.Post fmt
+
 
 type RawData = {
     Bytes : byte array
@@ -74,7 +85,7 @@ let analyseCommandLine (commandLine:byte array) =
                 |> Seq.toArray
     let other = commandLine
                 |> Seq.skip (id.Length + 1) // Ignore id and the first ' ' (sep between id & command)
-                |> Seq.takeWhile (fun b -> b <> byte(0))
+                |> Seq.takeWhile (fun b -> b <> byte(0)) // until First null byte
                 |> Seq.toArray
     let line = System.Text.Encoding.UTF8.GetString(other)
     let splits = line.Split(' ')
@@ -115,6 +126,8 @@ type ClientProcessorMessage =
 
 /// Creates a new Mailbox processor which parses the incomming data stream to messages
 let internal createInternalClientProcessorMailbox() = new MailboxProcessor<ClientProcessorMessageInternal>(fun inbox -> 
+    /// Waits for data and buffers the data in the memorystream
+    /// maybeRawReceiver indicates whether we are receiving raw data at the moment
     let rec waitForDataLoop (mem:MemoryStream) count readBytes (maybeRawReceiver:Option<MailboxProcessor<byte seq>>) = 
         async {
             let! msg = inbox.Receive()
@@ -139,9 +152,10 @@ let internal createInternalClientProcessorMailbox() = new MailboxProcessor<Clien
                             |> Seq.take receivedBytes
                             |> Seq.tryFindIndex (fun b -> b = byte(0))) with
                         | None -> 
+                            // Line is not complete so go ahaid and buffer it.
                             do! mem.AsyncWrite(buffer, 0, receivedBytes)
                             return! waitForDataLoop mem count 0 maybeRawReceiver
-                        | Some(nullIndex) -> // Found exit
+                        | Some(nullIndex) -> // Found exit (Line complete but there could be very well some raw data)
                             do! mem.AsyncWrite(buffer, 0, nullIndex) 
                             let line = analyseCommandLine (mem.ToArray())
                             mem.Dispose()

@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CSharpNAct.cs" />
     <Compile Include="MessageProcessing\CircularBuffer.cs" />
     <Compile Include="MessageProcessing\CircularStream.cs" />
     <Compile Include="MessageProcessing\DictionaryExtensions.cs" />

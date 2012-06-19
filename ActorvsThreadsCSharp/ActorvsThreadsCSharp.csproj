@@ -43,6 +43,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageProcessing\CircularBuffer.cs" />
+    <Compile Include="MessageProcessing\CircularStream.cs" />
+    <Compile Include="MessageProcessing\DictionaryExtensions.cs" />
+    <Compile Include="MessageProcessing\Logger.cs" />
+    <Compile Include="MessageProcessing\MessageProcessorAttribute.cs" />
+    <Compile Include="MessageProcessing\MessageServer.cs" />
+    <Compile Include="MessageProcessing\MessageServerClient.cs" />
+    <Compile Include="MessageProcessing\OneTimeBuffer.cs" />
+    <Compile Include="MessageProcessing\OneTimeStream.cs" />
+    <Compile Include="MessageProcessing\ParameterEventReceivedEventArgs.cs" />
+    <Compile Include="MessageProcessing\ParsedLineEventArgs.cs" />
+    <Compile Include="MessageProcessing\ProcessingEventArgs.cs" />
+    <Compile Include="MessageProcessing\RawDataStream.cs" />
+    <Compile Include="MessageProcessing\RawLineFormatException.cs" />
+    <Compile Include="MessageProcessing\RawLineId.cs" />
+    <Compile Include="MessageProcessing\RawLineReceivedEventArgs.cs" />
+    <Compile Include="MessageProcessing\RemoteServerException.cs" />
+    <Compile Include="MessageProcessing\SafeCommandReader.cs" />
+    <Compile Include="MessageProcessing\StringExtensions.cs" />
+    <Compile Include="SharedWithFSparp\StringParameter.cs" />
+    <Compile Include="MessageProcessing\ThreadStaticField.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SheetExamples.cs" />
